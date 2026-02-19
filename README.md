@@ -84,4 +84,62 @@ escaneados - Outputs en S3 - Documento de diseño (2--4 páginas)
 
 ------------------------------------------------------------------------
 
+
+## 9. Procesamiento Incremental e Idempotencia
+
+### Estrategia de Procesamiento Incremental
+
+El pipeline implementa procesamiento incremental mediante un enfoque configurable y metadata-driven.
+
+Principios clave:
+
+- La carga incremental se controla a través de archivos de configuración (JSON).
+- Estrategia basada en particiones (`year`, `month`).
+- En cada ejecución solo se procesan nuevas particiones detectadas.
+- Se pueden habilitar Glue Job Bookmarks para evitar reprocesar archivos previamente consumidos.
+- La lógica puede extenderse mediante una marca de agua (watermark) basada en una columna de fecha (ej. `pickup_datetime`).
+
+Este enfoque garantiza:
+
+- Escalabilidad
+- Optimización de costos
+- Evitar recargas completas innecesarias
+
+---
+
+### Estrategia de Idempotencia
+
+La solución es idempotente, lo que significa que:
+
+- Re-ejecutar el job con el mismo input no genera registros duplicados.
+- Las escrituras son conscientes de particiones (partition-aware).
+- El modo de escritura puede configurarse (overwrite por partición / dynamic partition overwrite).
+- Puede aplicarse deduplicación lógica usando claves primarias (ej. `trip_id`).
+
+En escenarios de reprocesamiento:
+
+- Las particiones existentes se sobrescriben de forma controlada.
+- No se generan duplicados en la capa Gold.
+- La integridad del modelo analítico se mantiene.
+
+---
+
+### Validación de Incrementalidad
+
+Para demostrar el comportamiento incremental:
+
+1. Ejecutar el pipeline con un primer conjunto de datos (Mes 1).
+2. Agregar un nuevo conjunto de datos (Mes 2).
+3. Re-ejecutar el pipeline.
+4. Validar en Athena:
+   - No existen registros duplicados.
+   - Solo se crean nuevas particiones.
+   - Los conteos de filas coinciden con lo esperado.
+
+Esto demuestra una ingestión incremental controlada y transformaciones idempotentes.
+
+
+
+
+
 Autor: Jefferson
