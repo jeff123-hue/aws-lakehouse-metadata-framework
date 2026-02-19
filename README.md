@@ -177,4 +177,5 @@ Consultar en Athena.
 Todos los pasos están documentados en este repositorio.
 
 
-Autor: Jefferson
+
+Autor: Jefferson David Peña Huertas
