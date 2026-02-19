@@ -138,8 +138,43 @@ Para demostrar el comportamiento incremental:
 
 Esto demuestra una ingestión incremental controlada y transformaciones idempotentes.
 
+------------------------------------------------------------------------
 
+## 10. Limpieza de Recursos (Cost-Control)
+Con el fin de evitar costos posteriores a la evaluación, se recomienda eliminar los siguientes recursos creados durante la prueba:
 
+### 1. AWS Glue
+Eliminar Glue Jobs creados para el pipeline.
+Eliminar Crawlers (si aplica).
+Eliminar tablas registradas en Glue Data Catalog.
+Ruta:
+AWS Console → Glue → Jobs / Crawlers / Tables → Delete
+
+### 2. Amazon S3
+Eliminar los buckets o prefijos creados exclusivamente para la prueba:
+landing/
+raw/
+gold/
+quarantine/
+quality-reports/
+Ruta:
+AWS Console → S3 → Bucket → Delete objects → Delete bucket
+-Asegurarse de vaciar el bucket antes de eliminarlo.
+
+### 3. CloudWatch Logs (Opcional)
+Eliminar grupos de logs asociados al Glue Job:
+AWS Console → CloudWatch → Log Groups → /aws-glue/jobs/
+
+### 11. Reproducibilidad
+La solución puede reproducirse siguiendo estos pasos:
+Crear bucket en S3.
+Subir dataset a landing/.
+Crear Glue Job con el script ubicado en /src.
+Configurar archivo JSON correspondiente.
+Ejecutar el Job.
+Registrar tabla en Glue Data Catalog.
+Consultar en Athena.
+Todos los pasos están documentados en este repositorio.
 
 
 Autor: Jefferson
