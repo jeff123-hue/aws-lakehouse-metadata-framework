@@ -1,0 +1,54 @@
+{
+    "pipeline_name": "dim_zones",
+  
+    "description": "Pipeline independiente para procesamiento de tabla dimensión NYC Taxi Zones. No afecta el pipeline daily_trips y demuestra soporte multi-pipeline del framework.",
+  
+    "source": {
+      "bucket": "jeff-data-lake-2026",
+      "prefix": "landing/zones/",
+      "format": "parquet"
+    },
+  
+    "target": {
+      "bucket": "jeff-data-lake-2026",
+      "prefix": "raw/zones/",
+      "format": "parquet",
+      "partition_by": []
+    },
+  
+    "incremental": {
+      "enabled": false
+    },
+  
+    "quality_rules": [
+      {
+        "name": "no_null_location_id",
+        "column": "LocationID",
+        "type": "not_null"
+      },
+      {
+        "name": "unique_location_id",
+        "column": "LocationID",
+        "type": "unique"
+      },
+      {
+        "name": "no_null_zone",
+        "column": "Zone",
+        "type": "not_null"
+      },
+      {
+        "name": "no_null_borough",
+        "column": "Borough",
+        "type": "not_null"
+      },
+      {
+        "name": "no_null_service_zone",
+        "column": "service_zone",
+        "type": "not_null"
+      }
+    ],
+  
+    "gold_layer": {
+      "enabled": false
+    }
+  }  

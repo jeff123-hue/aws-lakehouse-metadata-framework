@@ -1,0 +1,99 @@
+{
+  "pipeline_name": "daily_trips",
+
+  "description": "Pipeline metadata-driven para procesamiento incremental de NYC Taxi Trips con validaciones de calidad y capa Gold agregada.",
+
+  "quality_rules_documentation": {
+    "rule_1": "Completitud: trip_distance no debe ser null.",
+    "rule_2": "Unicidad: trip_distance no debe tener duplicados.",
+    "rule_3": "Rango mínimo: tip_amount debe ser mayor o igual a 0.",
+    "rule_4": "Rango mínimo: mta_tax debe ser mayor o igual a 0.",
+    "rule_5": "Rango mínimo: fare_amount debe ser mayor o igual a 0.",
+    "rule_6": "Rango máximo: trip_distance no debe superar 200 millas."
+  },
+
+  "source": {
+    "bucket": "jeff-data-lake-2026",
+    "prefix": "landing/nyc_taxi/",
+    "format": "parquet"
+  },
+
+  "lookup": {
+    "bucket": "jeff-data-lake-2026",
+    "prefix": "landing/zones/",
+    "format": "parquet"
+  },
+
+  "target": {
+    "bucket": "jeff-data-lake-2026",
+    "prefix": "raw/nyc_taxi/",
+    "format": "parquet",
+    "partition_by": ["year", "month", "day"]
+  },
+
+  "incremental": {
+    "enabled": true,
+    "watermark_column": "tpep_pickup_datetime"
+  },
+
+  "quality_rules": [
+    {
+      "name": "no_null_trip_distance",
+      "column": "trip_distance",
+      "type": "not_null"
+    },
+    {
+      "name": "unique_trip_distance",
+      "column": "trip_distance",
+      "type": "unique"
+    },
+    {
+      "name": "tip_amount_positive",
+      "column": "tip_amount",
+      "type": "min",
+      "value": 0
+    },
+    {
+      "name": "mta_tax_positive",
+      "column": "mta_tax",
+      "type": "min",
+      "value": 0
+    },
+    {
+      "name": "fare_amount_positive",
+      "column": "fare_amount",
+      "type": "min",
+      "value": 0
+    },
+    {
+      "name": "trip_distance_reasonable",
+      "column": "trip_distance",
+      "type": "max",
+      "value": 200
+    }
+  ],
+
+  "gold_layer": {
+    "enabled": true,
+    "destination_prefix": "gold/fact_trips/",
+    "group_by": ["year", "month", "day"],
+    "metrics": [
+      {
+        "column": "*",
+        "agg": "count",
+        "alias": "total_trips"
+      },
+      {
+        "column": "trip_distance",
+        "agg": "sum",
+        "alias": "total_distance"
+      },
+      {
+        "column": "trip_distance",
+        "agg": "avg",
+        "alias": "avg_trip_distance"
+      }
+    ],
+    "partition_by": ["year", "month"]
+  }
+}
